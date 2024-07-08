@@ -1,0 +1,275 @@
+#:kivy 1.0
+
+<CustomSnackbar>
+    MDIconButton:
+        pos_hint: {'center_y': .5}
+        icon: root.icon
+        opposite_colors: True
+
+    MDLabel:
+        size_hint_y: None
+        height: self.texture_size[1]
+        text: root.text
+        shorten: True
+        shorten_from: 'right'
+        pos_hint: {'center_y': .5}
+
+<ItemDrawer>
+    id: section_item
+    text: root.text
+    theme_text_color: "Custom"
+    # on_release: self.parent.set_color_item(self)
+    on_size:
+        self.ids._right_container.width = icons_container.width
+        self.ids._right_container.x = icons_container.width
+
+    IconsContainer:
+        id: icons_container
+
+        MDIconButton:
+            icon: 'file-document-edit-outline'
+            on_release: root.edit(section_item)
+            theme_text_color: "Custom"
+
+        MDIconButton:
+            icon: 'trash-can-outline'
+            on_release: root.delete(section_item)
+            theme_text_color: "Custom"
+
+<NotesView>:
+    orientation: "vertical"
+    text_section_view: text_input
+
+    MDToolbar:
+        id: toolbar
+        elevation: 8
+        md_bg_color: app.theme_cls.bg_dark
+        left_action_items: [["menu", lambda x: nav_drawer.set_state("open")],["magnify", lambda x: root.press_icon_search()]]
+        right_action_items: [["file", lambda x: root.menu_storage.open()],["cog", lambda x: root.menu_settings.open()]]
+
+    ScreenManager:
+        MDScreen:
+            FloatLayout:
+                id: float_text_layout
+                CustomTextInput:
+                    id: text_input
+                    multiline: True
+                    do_wrap: True
+                    markup: False
+                    font_name: "Roboto-Bold"
+                    use_bubble: True
+                    on_text: root.text_input_changed_callback()
+
+            MDNavigationDrawer:
+                id: nav_drawer
+
+                ContentNavigationDrawer:
+                    orientation: "vertical"
+                    padding: "8dp"
+                    spacing: "8dp"
+                    md_bg_color: app.theme_cls.bg_dark
+
+                    ScrollView:
+                        DrawerList:
+                            id: md_list
+
+                    MDFloatingActionButton:
+                        icon: 'plus'
+                        on_release: root.press_add_section()
+                        elevation_normal: 12
+                        pos_hint: {'x': .8, 'y':.05}
+
+<ShowFileMetadataDialogContent>
+    orientation: "vertical"
+    spacing: "12dp"
+    size_hint_y: None
+    height: "500dp"
+
+    MDBoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+
+        MDLabel:
+            font_style: "H6"
+            halign: "center"
+            valign: "center"
+            text: root.show_file_metadata_label
+
+        MDBoxLayout:
+            size_hint_y: None
+            height: 40
+            MDRectangleFlatButton:
+                size_hint: (.5, .8)
+                text: "Close"
+                on_release: root.cancel()
+
+<ShowAppMetadataDialogContent>
+    orientation: "vertical"
+    spacing: "12dp"
+    size_hint_y: None
+    height: "500dp"
+
+    MDBoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+
+        MDBoxLayout:
+            orientation: "vertical"
+
+            MDLabel:
+                font_style: "H6"
+                halign: "center"
+                valign: "center"
+                text: root.show_app_metadata_label
+
+            MDIconButton:
+                icon: "github"
+                pos_hint: {"center_x": .5, "center_y": .5}
+                on_release:
+                    root.execute_goto_external_url()
+
+        MDBoxLayout:
+            size_hint_y: None
+            height: 40
+            MDRectangleFlatButton:
+                size_hint: (.5, .8)
+                text: "Close"
+                on_release: root.cancel()
+
+<SearchDialogContent>:
+    orientation: "vertical"
+    spacing: "12dp"
+    size_hint_y: None
+    height: "500dp"
+
+    results_list: scroll
+
+    MDBoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+
+        MDLabel:
+            font_style: "H6"
+            halign: "center"
+            valign: "bottom"
+            text: root.search_results_message
+
+        ScrollableLabel:
+            MDList:
+                markup: True
+                id: scroll
+
+        MDBoxLayout:
+            orientation: "horizontal"
+            adaptive_height: True
+            spacing: "10dp"
+
+            MDSwitch:
+                id: search_all_sections_switch
+                active: root.get_search_switch_state("search_all_sections_switch")
+                on_active: root.search_switch_callback("search_all_sections_switch", self.active)
+            MDLabel:
+                text: "all sections"
+
+            MDSwitch:
+                id: search_case_sensitive_switch
+                active: root.get_search_switch_state("search_case_sensitive_switch")
+                on_active: root.search_switch_callback("search_case_sensitive_switch", self.active)
+            MDLabel:
+                text: "case sensitive"
+
+            MDSwitch:
+                id: search_full_words_switch
+                active: root.get_search_switch_state("search_full_words_switch")
+                on_active: root.search_switch_callback("search_full_words_switch", self.active)
+            MDLabel:
+                text: "full words"
+
+        MDTextField:
+            id: search_string_input_value
+            text: root.search_string_placeholder
+            hint_text: "What string to search for?"
+            max_text_length: 10
+
+        MDBoxLayout:
+            size_hint_y: None
+            height: 40
+            MDFlatButton:
+                size_hint: (.5, .8)
+                text: "Cancel"
+                on_release: root.cancel()
+            MDRectangleFlatButton:
+                size_hint: (.5, .8)
+                text: "Search"
+                on_release: root.execute_search(search_string_input_value.text)
+
+<AddSectionDialogContent>
+    orientation: "vertical"
+    spacing: "12dp"
+    size_hint_y: None
+    height: "500dp"
+
+    MDBoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+
+        MDLabel:
+            font_style: "H6"
+            halign: "center"
+            valign: "center"
+            text: root.add_section_result_message
+
+        MDTextField:
+            id: section_name_input_value
+            hint_text: "Enter section name"
+            max_text_length: 20
+
+        BoxLayout:
+            size_hint_y: None
+            height: 40
+            MDFlatButton:
+                size_hint: (.5, .8)
+                text: "Cancel"
+                on_release: root.cancel()
+            MDRectangleFlatButton:
+                size_hint: (.5, .8)
+                text: "Save"
+                on_release: root.execute_add_section(section_name_input_value.text)
+
+<EditSectionDialogContent>
+    orientation: "vertical"
+    spacing: "12dp"
+    size_hint_y: None
+    height: "500dp"
+
+    MDBoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+
+        MDLabel:
+            font_style: "H6"
+            halign: "center"
+            valign: "center"
+            text: root.edit_section_result_message
+
+        MDTextField:
+            id: section_name_input_value
+            hint_text: "Enter new section name"
+            max_text_length: 20
+
+        BoxLayout:
+            size_hint_y: None
+            height: 40
+            MDFlatButton:
+                size_hint: (.5, .8)
+                text: "Cancel"
+                on_release: root.cancel()
+            MDRectangleFlatButton:
+                size_hint: (.5, .8)
+                text: "Save"
+                on_release: root.execute_edit_section(root.old_section_name, section_name_input_value.text)
